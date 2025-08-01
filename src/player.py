@@ -13,7 +13,7 @@ class Player(ABC):
     @classmethod
     def choose_symbol(cls):
         """
-        Allow player to choose thier symbol (X or 0).
+        Allow player to choose their symbol (X or O).
 
         Returns:
             str: Selected player symbol ('X' or 'O')
