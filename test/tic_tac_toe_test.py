@@ -8,7 +8,7 @@ class TestTicTacToe(unittest.TestCase):
         self.game = TicTacToe()
 
     def test_board_init_creates_empty_3x3_grid(self) -> None:
-        # Test that board has exactly 9 position
+        # Test that board has exactly 9 positions
         self.assertEqual(len(self.game.board), 9)
 
         # Test that all positions are empty
