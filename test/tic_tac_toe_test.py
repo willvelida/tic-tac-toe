@@ -142,7 +142,7 @@ class TestTicTacToe(unittest.TestCase):
         self.assertEqual(self.game.get_display_value(1), TicTacToe.PLAYER_X)
         self.assertEqual(self.game.get_display_value(5), TicTacToe.PLAYER_O)
 
-    def test_get_display_value_returns_position_numbers_for_empty_position(self) -> None:
+    def test_get_display_value_returns_position_numbers_for_empty_positions(self) -> None:
         """Test get_display_value return position numbers for empty positions"""
         for position in range(1, 10):
             expected = str(position)
