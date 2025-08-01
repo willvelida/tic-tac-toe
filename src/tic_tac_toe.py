@@ -9,13 +9,11 @@ class TicTacToe:
     def __init__(self):
         """Initialize the game"""
         self.reset_board()
-        pass
 
     def reset_board(self):
         """Reset board and current player"""
         self.board = [self.EMPTY] * 9
         self.current_player = self.PLAYER_X
-        pass
 
     def is_valid_move(self, position: int) -> bool:
         """
