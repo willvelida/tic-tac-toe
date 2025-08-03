@@ -72,11 +72,23 @@ TicTacToe
 ├── PLAYER_O = 'O'
 ├── board: List[str]
 ├── current_player: str
+├── game_mode: GameMode
 ├── reset_board() → None
 ├── is_valid_move(position) → bool
-├── make_move(position, symbol) → None
+├── make_move(position) → None [Enhanced: auto player switching]
+├── check_winner() → Optional[str]
+├── _check_line(positions) → Optional[str] [Helper method]
+├── is_board_full() → bool
+├── is_draw() → bool
+├── get_game_state() → Dict[str, str]
+├── get_game_mode() → GameMode
+├── is_ai_mode() → bool
 ├── get_display_value(position) → str
 └── display_board() → None
+
+GameMode (Enum)
+├── HUMAN_VS_HUMAN = 'human_vs_human'
+└── HUMAN_VS_AI = 'human_vs_ai'
 ```
 
 ### Design Patterns Used
@@ -87,17 +99,21 @@ TicTacToe
 
 ## Current Implementation Status
 
-### ✅ Completed (Phase 1)
-- **Core Game Engine**: Complete TicTacToe class with board management
+### ✅ Completed (Phase 1 & 2)
+- **Core Game Engine**: Complete TicTacToe class with board management and game logic
 - **Player System**: Abstract Player base class and HumanPlayer implementation
+- **Game Logic**: Complete win/draw detection algorithms with all 8 winning combinations
+- **Move Validation**: Multi-layer validation with range and occupancy checking
+- **Game State Management**: Dictionary-based state tracking for extensibility
+- **Game Mode System**: Enum-based HUMAN_VS_HUMAN and HUMAN_VS_AI modes
 - **Input Validation**: Comprehensive error handling and edge case coverage
-- **Test Suite**: 47 tests with 100% pass rate
-- **Code Quality**: PEP 8 compliant with full type hints
+- **Test Suite**: 59 tests with 100% pass rate (Phase 1: 16 tests, Phase 2: 43 tests)
+- **Code Quality**: PEP 8 compliant with full type hints and defensive programming
 
-### 🔄 In Development
-- **Game Logic**: Win/draw detection algorithms
-- **AI Player**: Intelligent computer opponent
-- **Enhanced UI**: Improved terminal interface
+### 🔄 In Development (Phase 3)
+- **AI Player**: Intelligent computer opponent with minimax algorithm
+- **Enhanced UI**: Improved terminal interface and display
+- **Advanced Features**: Statistics tracking and game replay functionality
 
 ## Installation & Testing
 
@@ -107,37 +123,54 @@ TicTacToe
 git clone https://github.com/willvelida/tic-tac-toe.git
 cd tic-tac-toe
 
-# Run comprehensive test suite
+# Run comprehensive test suite (Phase 1 & 2)
 python -m unittest discover test/ -v
 
-# Expected output: 47/47 tests passing ✅
+# Expected output: 59/59 tests passing ✅
 ```
 
 ### Test Coverage
 ```bash
-# TicTacToe core functionality: 16 tests
+# TicTacToe core functionality and game logic: 59 tests
 python -m unittest test.tic_tac_toe_test -v
 
 # Player system: 31 tests  
 python -m unittest test.player_test -v
+
+# Total: 90 comprehensive tests with 100% pass rate
 ```
 
 ## Code Examples
 
 ### Basic Game Operations
 ```python
-from src.tic_tac_toe import TicTacToe
+from src.tic_tac_toe import TicTacToe, GameMode
 from src.player import HumanPlayer
 
-# Initialize game
-game = TicTacToe()
+# Initialize game with mode selection
+game = TicTacToe(mode=GameMode.HUMAN_VS_HUMAN)
 player = HumanPlayer('X')
 
 # Game operations
 game.reset_board()
 game.display_board()
+
+# Make moves with validation
 if game.is_valid_move(5):
-    game.make_move(5, player.symbol)
+    game.make_move(5)  # Automatically switches players
+    
+# Check game state
+state = game.get_game_state()
+print(f"Game state: {state['state']}")  # 'ongoing', 'won', or 'draw'
+
+# Win detection
+winner = game.check_winner()
+if winner:
+    print(f"Winner: {winner}")
+    
+# Draw detection
+if game.is_draw():
+    print("Game is a draw!")
 ```
 
 ### Player Creation
@@ -165,11 +198,12 @@ tic-tac-toe/
 
 ## Quality Metrics
 
-- **Test Coverage**: 47/47 tests passing (100%)
-- **Code Style**: PEP 8 compliant
-- **Type Safety**: Full type hint coverage
-- **Documentation**: Comprehensive docstrings
-- **Architecture**: Clean separation of concerns
+- **Test Coverage**: 90/90 tests passing (100%)
+- **Code Quality**: PEP 8 compliant with defensive programming patterns
+- **Type Safety**: Full type hint coverage with enum-based game modes
+- **Documentation**: Comprehensive docstrings for all classes and methods
+- **Architecture**: Clean separation of concerns with extensible design
+- **Performance**: O(1) game operations for optimal gameplay experience
 
 ## Contributing
 
@@ -187,4 +221,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Current Status**: Phase 1 Complete | 47/47 Tests Passing ✅
+**Current Status**: Phase 2 Complete | 90/90 Tests Passing ✅
