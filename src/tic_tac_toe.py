@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from enum import Enum
 
 class GameMode(Enum):
@@ -164,4 +164,37 @@ class TicTacToe:
             bool: True if playing against AI, False otherwise
         """
         return self.mode == GameMode.HUMAN_VS_AI
+    
+    def find_winning_move(self, player_symbol: str) -> Optional[int]:
+        """
+        Find a position where the player can win in one move.
+
+        Args:
+            player_symbol (str): 'X' or 'O'
+
+        Returns:
+            Optional[int]: Position 1-9 where player can win, or None if no winning move
+        """
+        winning_combinations = [
+            [0,1,2], [3,4,5], [6,7,8],  # Rows
+            [0,3,6], [1,4,7], [2,5,8],  # Columns
+            [0,4,8], [2,4,6]           # Diagonals
+        ]
+
+        for combo in winning_combinations:
+            player_count = 0
+            empty_count = 0
+            empty_position = None
+
+            for pos in combo:
+                if self.board[pos] == player_symbol:
+                    player_count += 1
+                elif self.board[pos] == self.EMPTY:
+                    empty_count += 1
+                    empty_position = pos
+            
+            if player_count == 2 and empty_count == 1:
+                return empty_position + 1
+            
+        return None
     
