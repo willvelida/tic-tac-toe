@@ -227,7 +227,7 @@ class AIPlayer(Player):
     
     def _get_opponent_symbol(self) -> str:
         """
-         Get the opponent's symbol.
+        Get the opponent's symbol.
     
         Returns:
             str: The opponent's symbol ('X' or 'O')
