@@ -1355,7 +1355,7 @@ class TestTicTacToe(unittest.TestCase):
         # Board with only one empty position, but no win possible
         self.game.board = ['X', 'O', 'X',  # positions 1,2,3
                            'O', 'X', 'O',  # positions 4,5,6
-                           'O', 'X', 'O']  # positions 7,8,9 - changed last to O
+                           'O', 'X', 'O']  # positions 7,8,9
         
         result_x = self.game.find_winning_move('X')
         result_o = self.game.find_winning_move('O')
