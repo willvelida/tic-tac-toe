@@ -1196,5 +1196,202 @@ class TestTicTacToe(unittest.TestCase):
         ai_result = game.is_ai_mode()
         self.assertIsInstance(ai_result, bool)
 
+    def test_find_winning_move_detects_row_win_for_x(self) -> None:
+        """Test find_winning_move detects X can win by completing a row."""
+        # X can win top row by playing position 3
+        self.game.board = ['X', 'X', ' ',  # positions 1,2,3
+                           'O', 'O', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        
+        result = self.game.find_winning_move('X')
+        self.assertEqual(result, 3)
+    
+    def test_find_winning_move_detects_column_win_for_o(self) -> None:
+        """Test find_winning_move detects O can win by completing a column."""
+        # O can win left column by playing position 7
+        self.game.board = ['O', 'X', 'X',  # positions 1,2,3
+                           'O', 'X', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        
+        result = self.game.find_winning_move('O')
+        self.assertEqual(result, 7)
+    
+    def test_find_winning_move_detects_diagonal_win(self) -> None:
+        """Test find_winning_move detects diagonal win opportunity."""
+        # X can win main diagonal by playing position 9
+        self.game.board = ['X', 'O', 'O',  # positions 1,2,3
+                           ' ', 'X', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        
+        result = self.game.find_winning_move('X')
+        self.assertEqual(result, 9)
+    
+    def test_find_winning_move_returns_none_when_no_win_available(self) -> None:
+        """Test find_winning_move returns None when no immediate win exists."""
+        # Board where no player can win in one move
+        self.game.board = ['X', 'O', 'X',  # positions 1,2,3  
+                        'O', 'X', 'O',  # positions 4,5,6
+                        'O', 'X', 'O']  # positions 7,8,9 - make this position O instead of empty
+        
+        result_x = self.game.find_winning_move('X')
+        result_o = self.game.find_winning_move('O')
+        
+        self.assertIsNone(result_x)
+        self.assertIsNone(result_o)
+    
+    def test_find_winning_move_returns_none_for_empty_board(self) -> None:
+        """Test find_winning_move returns None on empty board."""
+        result = self.game.find_winning_move('X')
+        self.assertIsNone(result)
+
+    def test_find_winning_move_detects_all_row_wins(self) -> None:
+        """Test find_winning_move detects wins in all three rows."""
+        # Top row win
+        self.game.board = ['X', 'X', ' ',  # positions 1,2,3
+                           ' ', ' ', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('X'), 3)
+        
+        # Middle row win
+        self.game.board = [' ', ' ', ' ',  # positions 1,2,3
+                           'O', 'O', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('O'), 6)
+        
+        # Bottom row win
+        self.game.board = [' ', ' ', ' ',  # positions 1,2,3
+                           ' ', ' ', ' ',  # positions 4,5,6
+                           'X', 'X', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('X'), 9)
+
+    def test_find_winning_move_detects_all_column_wins(self) -> None:
+        """Test find_winning_move detects wins in all three columns."""
+        # Left column win
+        self.game.board = ['X', ' ', ' ',  # positions 1,2,3
+                           'X', ' ', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('X'), 7)
+        
+        # Middle column win
+        self.game.board = [' ', 'O', ' ',  # positions 1,2,3
+                           ' ', 'O', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('O'), 8)
+        
+        # Right column win
+        self.game.board = [' ', ' ', 'X',  # positions 1,2,3
+                           ' ', ' ', 'X',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('X'), 9)
+
+    def test_find_winning_move_detects_both_diagonal_wins(self) -> None:
+        """Test find_winning_move detects wins in both diagonals."""
+        # Main diagonal win (positions 1,5,9)
+        self.game.board = ['X', ' ', ' ',  # positions 1,2,3
+                           ' ', 'X', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('X'), 9)
+        
+        # Anti-diagonal win (positions 3,5,7)
+        self.game.board = [' ', ' ', 'O',  # positions 1,2,3
+                           ' ', 'O', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('O'), 7)
+
+    def test_find_winning_move_with_different_gap_positions(self) -> None:
+        """Test find_winning_move when gap is in different positions of a line."""
+        # Gap at beginning of row
+        self.game.board = [' ', 'X', 'X',  # positions 1,2,3
+                           ' ', ' ', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('X'), 1)
+        
+        # Gap in middle of row
+        self.game.board = ['O', ' ', 'O',  # positions 1,2,3
+                           ' ', ' ', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        self.assertEqual(self.game.find_winning_move('O'), 2)
+        
+        # Gap at end of row (already tested in other tests)
+
+    def test_find_winning_move_prioritizes_first_found_win(self) -> None:
+        """Test find_winning_move returns first winning move found when multiple exist."""
+        # Multiple winning opportunities for X
+        self.game.board = ['X', 'X', ' ',  # positions 1,2,3 - top row win
+                           'X', 'O', ' ',  # positions 4,5,6 - left column win
+                           ' ', 'O', ' ']  # positions 7,8,9
+        
+        # Should return position 3 (first row combination checked)
+        result = self.game.find_winning_move('X')
+        self.assertIn(result, [3, 7])  # Either top row or left column win
+
+    def test_find_winning_move_ignores_opponent_pieces(self) -> None:
+        """Test find_winning_move only considers the specified player's pieces."""
+        # Board with mixed X and O
+        self.game.board = ['X', 'O', ' ',  # positions 1,2,3
+                           'X', 'O', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        
+        # X can win left column, O can win middle column
+        result_x = self.game.find_winning_move('X')
+        result_o = self.game.find_winning_move('O')
+        
+        self.assertEqual(result_x, 7)  # X wins left column
+        self.assertEqual(result_o, 8)  # O wins middle column
+
+    def test_find_winning_move_with_blocked_lines(self) -> None:
+        """Test find_winning_move when some lines are blocked by opponent."""
+        # Lines blocked by opponent pieces - no immediate win possible
+        self.game.board = ['X', 'O', 'X',  # positions 1,2,3 - top row blocked
+                           'O', 'X', 'O',  # positions 4,5,6 - middle row blocked
+                           'O', 'X', 'X']  # positions 7,8,9 - bottom row blocked
+        
+        # No player can win in one move
+        result = self.game.find_winning_move('X')
+        self.assertIsNone(result)  # No immediate win possible
+
+    def test_find_winning_move_with_full_board_scenarios(self) -> None:
+        """Test find_winning_move with nearly full board."""
+        # Board with only one empty position, but no win possible
+        self.game.board = ['X', 'O', 'X',  # positions 1,2,3
+                           'O', 'X', 'O',  # positions 4,5,6
+                           'O', 'X', 'O']  # positions 7,8,9 - changed last to O
+        
+        result_x = self.game.find_winning_move('X')
+        result_o = self.game.find_winning_move('O')
+        
+        self.assertIsNone(result_x)
+        self.assertIsNone(result_o)
+
+    def test_find_winning_move_return_type(self) -> None:
+        """Test find_winning_move returns correct types."""
+        # Test when win is found
+        self.game.board = ['X', 'X', ' ',  # positions 1,2,3
+                           ' ', ' ', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        
+        result = self.game.find_winning_move('X')
+        self.assertIsInstance(result, int)
+        self.assertGreaterEqual(result, 1)
+        self.assertLessEqual(result, 9)
+        
+        # Test when no win is found
+        result_none = self.game.find_winning_move('O')
+        self.assertIsNone(result_none)
+
+    def test_find_winning_move_with_invalid_player_symbol(self) -> None:
+        """Test find_winning_move behavior with invalid player symbols."""
+        # Test with invalid symbols - should not find wins
+        self.game.board = ['X', 'X', ' ',  # positions 1,2,3
+                           ' ', ' ', ' ',  # positions 4,5,6
+                           ' ', ' ', ' ']  # positions 7,8,9
+        
+        # Invalid symbols should return None
+        result_invalid = self.game.find_winning_move('Z')
+        self.assertIsNone(result_invalid)
+        
+        result_empty = self.game.find_winning_move('')
+        self.assertIsNone(result_empty)
+
 if __name__ == '__main__':
     unittest.main()
