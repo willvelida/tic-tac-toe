@@ -343,6 +343,117 @@ class TestGameControllerIntegration(unittest.TestCase):
         ai_player.status_callback("Test message")
         self.mock_ui.show_ai_status.assert_called_with("Test message")
 
+    def test_session_stats_initialization(self) -> None:
+        """Test that session stats initialize correctly."""
+        expected_stats = {
+            'games_played': 0,
+            'x_wins': 0,
+            'o_wins': 0,
+            'draws': 0
+        }
+        self.assertEqual(self.controller.session_stats, expected_stats)
+
+    def test_update_session_stats_x_win(self) -> None:
+        """Test updating stats when X wins."""
+        # Arrange
+        game_state = {'state': 'won', 'winner': 'X'}
+        
+        # Act
+        self.controller._update_session_stats(game_state)
+        
+        # Assert
+        expected_stats = {
+            'games_played': 1,
+            'x_wins': 1,
+            'o_wins': 0,
+            'draws': 0
+        }
+        self.assertEqual(self.controller.session_stats, expected_stats)
+
+    def test_update_session_stats_o_win(self) -> None:
+        """Test updating stats when O wins."""
+        # Arrange
+        game_state = {'state': 'won', 'winner': 'O'}
+        
+        # Act
+        self.controller._update_session_stats(game_state)
+        
+        # Assert
+        expected_stats = {
+            'games_played': 1,
+            'x_wins': 0,
+            'o_wins': 1,
+            'draws': 0
+        }
+        self.assertEqual(self.controller.session_stats, expected_stats)
+
+    def test_update_session_stats_draw(self) -> None:
+        """Test updating stats when game is a draw."""
+        # Arrange
+        game_state = {'state': 'draw'}
+        
+        # Act
+        self.controller._update_session_stats(game_state)
+        
+        # Assert
+        expected_stats = {
+            'games_played': 1,
+            'x_wins': 0,
+            'o_wins': 0,
+            'draws': 1
+        }
+        self.assertEqual(self.controller.session_stats, expected_stats)
+
+    def test_update_session_stats_multiple_games(self) -> None:
+        """Test stats accumulation over multiple games."""
+        # Arrange & Act
+        self.controller._update_session_stats({'state': 'won', 'winner': 'X'})
+        self.controller._update_session_stats({'state': 'draw'})
+        self.controller._update_session_stats({'state': 'won', 'winner': 'O'})
+        self.controller._update_session_stats({'state': 'won', 'winner': 'X'})
+        
+        # Assert
+        expected_stats = {
+            'games_played': 4,
+            'x_wins': 2,
+            'o_wins': 1,
+            'draws': 1
+        }
+        self.assertEqual(self.controller.session_stats, expected_stats)
+
+    # EDGE CASE TESTS
+    def test_update_session_stats_invalid_winner(self) -> None:
+        """Test handling invalid winner in game state."""
+        # Arrange
+        game_state = {'state': 'won', 'winner': 'Z'}  # Invalid winner
+        
+        # Act
+        self.controller._update_session_stats(game_state)
+        
+        # Assert - should only increment games_played
+        expected_stats = {
+            'games_played': 1,
+            'x_wins': 0,
+            'o_wins': 0,
+            'draws': 0
+        }
+        self.assertEqual(self.controller.session_stats, expected_stats)
+
+    def test_update_session_stats_missing_winner(self) -> None:
+        """Test handling missing winner in won game state."""
+        # Arrange
+        game_state = {'state': 'won'}  # Missing winner key
+        
+        # Act & Assert - should not crash
+        try:
+            self.controller._update_session_stats(game_state)
+            # Should increment games_played but no wins
+            self.assertEqual(self.controller.session_stats['games_played'], 1)
+            self.assertEqual(self.controller.session_stats['x_wins'], 0)
+            self.assertEqual(self.controller.session_stats['o_wins'], 0)
+        except KeyError:
+            self.fail("Should handle missing winner gracefully")
+
 
 if __name__ == '__main__':
     # Run tests with verbose output
