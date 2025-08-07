@@ -165,7 +165,7 @@ class TestGameController(unittest.TestCase):
     def test_get_ai_move(self) -> None:
         """Test getting move from AI player."""
         # Arrange
-        self.controller.game = TicTacToe()  # <-- ADD THIS LINE
+        self.controller.game = TicTacToe()
         mock_ai_player = Mock(spec=AIPlayer)
         mock_ai_player.get_move.return_value = 3
         
