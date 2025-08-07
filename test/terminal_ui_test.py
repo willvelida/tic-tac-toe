@@ -216,7 +216,7 @@ class TestTerminalUIInputMethods(unittest.TestCase):
     def test_get_valid_position_keyboard_interrupt(self, mock_input) -> None:
         """Test handling KeyboardInterrupt during position input."""
         # Arrange
-        self.mock_game.current_player = 'X'  # <-- ADD THIS LINE
+        self.mock_game.current_player = 'X'
         mock_input.side_effect = KeyboardInterrupt()
         
         # Act & Assert
