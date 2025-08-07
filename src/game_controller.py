@@ -22,6 +22,13 @@ class GameController:
         self.game: Optional[TicTacToe] = None
         self.player_x: Optional[Player] = None
         self.player_o: Optional[Player] = None
+
+        self.session_stats = {
+            'games_played': 0,
+            'x_wins': 0,
+            'o_wins': 0,
+            'draws': 0
+        }
     
     def play(self) -> None:
         """
@@ -40,6 +47,9 @@ class GameController:
             # Display final result
             game_state = self.game.get_game_state()
             self.ui.display_game_result(game_state)
+
+            self._update_session_stats(game_state)
+            self.ui.display_session_stats(self.session_stats)
             
         except SystemExit:
             # Clean exit requested by user
@@ -234,3 +244,16 @@ class GameController:
             "player_x_type": type(self.player_x).__name__,
             "player_o_type": type(self.player_o).__name__
         }
+    
+    def _update_session_stats(self, game_state: dict) -> None:
+        """Update session statistics after game completion."""
+        self.session_stats['games_played'] += 1
+        
+        if game_state['state'] == 'draw':
+            self.session_stats['draws'] += 1
+        elif game_state['state'] == 'won':
+            winner = game_state.get('winner')
+            if winner == 'X':
+                self.session_stats['x_wins'] += 1
+            elif winner == 'O':
+                self.session_stats['o_wins'] += 1

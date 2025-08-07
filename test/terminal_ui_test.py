@@ -146,6 +146,66 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         output = mock_stdout.getvalue()
         self.assertIn("🎮 AI Player O's turn", output)
 
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_display_session_stats_first_game(self, mock_stdout) -> None:
+        """Test that stats are not displayed for first game."""
+        # Arrange
+        stats = {
+            'games_played': 1,
+            'x_wins': 1,
+            'o_wins': 0,
+            'draws': 0
+        }
+        
+        # Act
+        self.ui.display_session_stats(stats)
+        
+        # Assert - no output for first game
+        output = mock_stdout.getvalue()
+        self.assertEqual(output, "")
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_display_session_stats_multiple_games(self, mock_stdout) -> None:
+        """Test displaying stats for multiple games."""
+        # Arrange
+        stats = {
+            'games_played': 3,
+            'x_wins': 2,
+            'o_wins': 0,
+            'draws': 1
+        }
+        
+        # Act
+        self.ui.display_session_stats(stats)
+        
+        # Assert
+        output = mock_stdout.getvalue()
+        self.assertIn("📊 Session: 3 games", output)
+        self.assertIn("2 X wins", output)
+        self.assertIn("0 O wins", output)
+        self.assertIn("1 draws", output)
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_display_session_stats_edge_cases(self, mock_stdout) -> None:
+        """Test displaying stats with edge case values."""
+        # Test zero games (shouldn't display)
+        stats_zero = {'games_played': 0, 'x_wins': 0, 'o_wins': 0, 'draws': 0}
+        self.ui.display_session_stats(stats_zero)
+        self.assertEqual(mock_stdout.getvalue(), "")
+        
+        # Reset stdout for next test
+        mock_stdout.seek(0)
+        mock_stdout.truncate(0)
+        
+        # Test large numbers
+        stats_large = {'games_played': 100, 'x_wins': 45, 'o_wins': 35, 'draws': 20}
+        self.ui.display_session_stats(stats_large)
+        output = mock_stdout.getvalue()
+        self.assertIn("100 games", output)
+        self.assertIn("45 X wins", output)
+        self.assertIn("35 O wins", output)
+        self.assertIn("20 draws", output)
+
 
 class TestTerminalUIInputMethods(unittest.TestCase):
     """Test input methods that require user interaction."""

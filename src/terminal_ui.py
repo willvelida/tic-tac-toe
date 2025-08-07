@@ -243,3 +243,11 @@ class TerminalUI:
         """
         player_type = "AI" if is_ai else "Human"
         print(f"\n🎮 {player_type} Player {current_player_symbol}'s turn")
+
+    def display_session_stats(self, stats: dict) -> None:
+        """Display simple session statistics."""
+        if stats['games_played'] <= 1:
+            return  # Skip stats for first game
+        
+        print(f"\n📊 Session: {stats['games_played']} games, "
+            f"{stats['x_wins']} X wins, {stats['o_wins']} O wins, {stats['draws']} draws")
