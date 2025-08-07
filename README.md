@@ -131,7 +131,6 @@ TicTacToe
 GameMode (Enum)
 ├── HUMAN_VS_HUMAN = 'human_vs_human'
 └── HUMAN_VS_AI = 'human_vs_ai'
-└── HUMAN_VS_AI = 'human_vs_ai'
 
 DifficultyLevel (Enum)
 ├── EASY = 'easy'
