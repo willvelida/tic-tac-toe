@@ -6,18 +6,80 @@ class GameMode(Enum):
     HUMAN_VS_AI = 'human_vs_ai'
 
 class TicTacToe:
+    """
+    Core Tic-Tac-Toe game engine with board management and game logic.
+    
+    This class handles the complete game state including board representation,
+    move validation, win detection, and player turn management. Supports both
+    human vs human and human vs AI game modes.
+    
+    Example:
+        Basic game setup and play:
+        
+        >>> from src.tic_tac_toe import TicTacToe, GameMode
+        >>> 
+        >>> # Create a new game
+        >>> game = TicTacToe(GameMode.HUMAN_VS_HUMAN)
+        >>> 
+        >>> # Make some moves
+        >>> game.make_move(1)  # X plays position 1
+        >>> game.make_move(5)  # O plays center
+        >>> game.make_move(2)  # X plays position 2
+        >>> 
+        >>> # Check game state
+        >>> winner = game.check_winner()
+        >>> if winner:
+        >>>     print(f"Winner: {winner}")
+        >>> elif game.is_draw():
+        >>>     print("Game is a draw!")
+        
+    Attributes:
+        EMPTY (str): Symbol representing empty board position (' ')
+        PLAYER_X (str): Symbol for player X
+        PLAYER_O (str): Symbol for player O
+        board (List[str]): 9-element list representing 3x3 board
+        current_player (str): Current player's symbol ('X' or 'O')
+        mode (GameMode): Current game mode (HUMAN_VS_HUMAN or HUMAN_VS_AI)
+    """
     # Constants
     EMPTY = ' '
     PLAYER_X = 'X'
     PLAYER_O = 'O'
 
     def __init__(self, mode: GameMode = GameMode.HUMAN_VS_AI):
-        """Initialize the game"""
+        """
+        Initialize a new Tic-Tac-Toe game instance.
+        
+        Creates a fresh game with the specified mode and resets the board to 
+        starting state. The game begins with player X's turn.
+        
+        Args:
+            mode (GameMode, optional): Game mode to use. Defaults to GameMode.HUMAN_VS_AI.
+                Can be HUMAN_VS_HUMAN or HUMAN_VS_AI.
+                
+        Example:
+            >>> game = TicTacToe()  # Defaults to Human vs AI
+            >>> game2 = TicTacToe(GameMode.HUMAN_VS_HUMAN)
+        """
         self.mode = mode
         self.reset_board()
 
     def reset_board(self):
-        """Reset board and current player"""
+        """
+        Reset the game board to initial state and set starting player.
+        
+        Clears all positions on the board to empty spaces and sets the current
+        player to X (first player). This method is called during initialization
+        and can be used to start a new game while keeping the same instance.
+        
+        Example:
+            >>> game = TicTacToe()
+            >>> game.make_move(1)  # Make some moves
+            >>> game.make_move(2)
+            >>> game.reset_board()  # Start fresh
+            >>> game.current_player
+            'X'
+        """
         self.board = [self.EMPTY] * 9
         self.current_player = self.PLAYER_X
 
@@ -42,6 +104,16 @@ class TicTacToe:
         
         Args:
             position (int): Position on board (1-9)
+            
+        Raises:
+            ValueError: If position is not between 1-9
+            ValueError: If position is already occupied
+            
+        Example:
+            >>> game = TicTacToe()
+            >>> game.make_move(5)  # Place X in center
+            >>> game.current_player
+            'O'
         """
         if not self.is_valid_move(position):
             if not (1 <= position <= 9):
@@ -53,7 +125,15 @@ class TicTacToe:
         self._switch_player()
 
     def _switch_player(self):
-        """Private method to alternate current player"""
+        """
+        Switch current player from X to O or O to X.
+        
+        Private method called automatically after each valid move to alternate
+        turns between players. Ensures proper game flow and turn management.
+        
+        Side Effects:
+            Updates self.current_player to the opposite player
+        """
         self.current_player = self.PLAYER_O if self.current_player == self.PLAYER_X else self.PLAYER_X
 
     def get_display_value(self, position: int) -> str:
@@ -65,6 +145,14 @@ class TicTacToe:
 
         Returns:
             str: Position number if empty, player symbol if occupied
+            
+        Example:
+            >>> game = TicTacToe()
+            >>> game.get_display_value(1)  # Empty position
+            '1'
+            >>> game.make_move(1)
+            >>> game.get_display_value(1)  # Occupied position
+            'X'
         """
             
         board_value = self.board[position - 1]
@@ -174,7 +262,18 @@ class TicTacToe:
 
         Returns:
             Optional[int]: Position 1-9 where player can win, or None if no winning move
+            
+        Raises:
+            ValueError: If player_symbol is not 'X' or 'O'
+            
+        Example:
+            >>> game = TicTacToe()
+            >>> game.board = ['X', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            >>> game.find_winning_move('X')
+            3  # Position 3 completes the top row
         """
+        if player_symbol not in [self.PLAYER_X, self.PLAYER_O]:
+            raise ValueError(f"Invalid player symbol '{player_symbol}'. Must be 'X' or 'O'.")
         winning_combinations = [
             [0,1,2], [3,4,5], [6,7,8],  # Rows
             [0,3,6], [1,4,7], [2,5,8],  # Columns

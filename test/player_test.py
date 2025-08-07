@@ -2,7 +2,9 @@ import unittest
 from unittest.mock import patch, call, MagicMock
 import random
 from src.player import Player, HumanPlayer, AIPlayer, DifficultyLevel
-from src.tic_tac_toe import TicTacToe
+from src.tic_tac_toe import TicTacToe, GameMode
+from src.game_controller import GameController
+from src.terminal_ui import TerminalUI
 import time
 
 class TestPlayer(unittest.TestCase):
@@ -224,181 +226,185 @@ class TestPlayer(unittest.TestCase):
         with self.assertRaises(TypeError):
             Player('X')
     
+class TestGameControllerHumanInput(unittest.TestCase):
+    """Test cases for GameController human input handling - the modern architecture."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.ui = TerminalUI()
+        self.controller = GameController(self.ui)
+        self.game = TicTacToe(GameMode.HUMAN_VS_HUMAN)
+        self.controller.game = self.game
+    
     @patch('builtins.input')
-    def test_human_player_get_move_returns_valid_integer(self, mock_input):
-        """Test HumanPlayer.get_move returns integer when valid input provided."""
+    def test_game_controller_get_human_move_returns_valid_position(self, mock_input):
+        """Test GameController._get_human_move returns valid position."""
         mock_input.return_value = '5'
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
-        
-        result = player.get_move(board)
+        result = self.controller._get_human_move()
         
         self.assertEqual(result, 5)
         self.assertIsInstance(result, int)
     
-    @patch('builtins.input')
-    def test_human_player_get_move_with_different_positions(self, mock_input):
-        """Test HumanPlayer.get_move with different valid positions."""
-        player = HumanPlayer('O')
-        board = [' '] * 9
-        
+    @patch('builtins.input') 
+    def test_game_controller_get_human_move_with_different_positions(self, mock_input):
+        """Test GameController._get_human_move with different valid positions."""
         test_positions = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
         
         for position_str in test_positions:
             with self.subTest(position=position_str):
                 mock_input.return_value = position_str
-                result = player.get_move(board)
+                result = self.controller._get_human_move()
                 self.assertEqual(result, int(position_str))
     
     @patch('builtins.input')
-    def test_human_player_get_move_raises_value_error_for_non_numeric(self, mock_input):
-        """Test HumanPlayer.get_move raises ValueError for non-numeric input."""
-        mock_input.return_value = 'abc'
+    @patch('builtins.print')  # Mock print to avoid error output during tests
+    def test_game_controller_handles_invalid_input_with_retry(self, mock_print, mock_input):
+        """Test GameController handles invalid input and retries until valid."""
+        # First invalid, then valid input
+        mock_input.side_effect = ['abc', '5']
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
+        result = self.controller._get_human_move()
         
-        with self.assertRaises(ValueError):
-            player.get_move(board)
+        self.assertEqual(result, 5)
+        self.assertEqual(mock_input.call_count, 2)
     
     @patch('builtins.input')
-    def test_human_player_get_move_raises_value_error_for_empty_input(self, mock_input):
-        """Test HumanPlayer.get_move raises ValueError for empty input."""
-        mock_input.return_value = ''
+    @patch('builtins.print')
+    def test_game_controller_handles_out_of_range_positions(self, mock_print, mock_input):
+        """Test GameController handles out of range positions with retry."""
+        # Out of range, then valid
+        mock_input.side_effect = ['0', '10', '5']
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
+        result = self.controller._get_human_move()
         
-        with self.assertRaises(ValueError):
-            player.get_move(board)
+        self.assertEqual(result, 5)
+        self.assertEqual(mock_input.call_count, 3)
     
     @patch('builtins.input')
-    def test_human_player_get_move_raises_value_error_for_whitespace(self, mock_input):
-        """Test HumanPlayer.get_move raises ValueError for whitespace-only input."""
-        mock_input.return_value = '   '
+    @patch('builtins.print')
+    def test_game_controller_handles_occupied_positions(self, mock_print, mock_input):
+        """Test GameController handles occupied positions with retry."""
+        # Set up a game with position 5 already taken
+        self.game.make_move(5)  # X takes position 5
         
-        player = HumanPlayer('O')
-        board = [' '] * 9
+        # Try to take position 5 (occupied), then choose position 1 (free)
+        mock_input.side_effect = ['5', '1']
         
-        with self.assertRaises(ValueError):
-            player.get_move(board)
+        result = self.controller._get_human_move()
+        
+        self.assertEqual(result, 1)
+        self.assertEqual(mock_input.call_count, 2)
     
     @patch('builtins.input')
-    def test_human_player_get_move_accepts_negative_numbers(self, mock_input):
-        """Test HumanPlayer.get_move accepts negative numbers (validation happens elsewhere)."""
-        mock_input.return_value = '-1'
+    @patch('builtins.print')
+    def test_game_controller_handles_empty_input(self, mock_print, mock_input):
+        """Test GameController handles empty input with retry."""
+        mock_input.side_effect = ['', '   ', '7']
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
+        result = self.controller._get_human_move()
         
-        result = player.get_move(board)
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 7)
+        self.assertEqual(mock_input.call_count, 3)
     
     @patch('builtins.input')
-    def test_human_player_get_move_accepts_large_numbers(self, mock_input):
-        """Test HumanPlayer.get_move accepts numbers outside valid range (validation happens elsewhere)."""
-        mock_input.return_value = '100'
+    def test_game_controller_handles_keyboard_interrupt(self, mock_input):
+        """Test GameController handles KeyboardInterrupt gracefully."""
+        mock_input.side_effect = KeyboardInterrupt()
         
-        player = HumanPlayer('O')
-        board = [' '] * 9
-        
-        result = player.get_move(board)
-        self.assertEqual(result, 100)
+        with self.assertRaises(SystemExit):
+            self.controller._get_human_move()
     
     @patch('builtins.input')
-    def test_human_player_get_move_accepts_zero(self, mock_input):
-        """Test HumanPlayer.get_move accepts zero (validation happens elsewhere)."""
-        mock_input.return_value = '0'
+    def test_game_controller_handles_eof_error(self, mock_input):
+        """Test GameController handles EOFError gracefully.""" 
+        mock_input.side_effect = EOFError()
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
-        
-        result = player.get_move(board)
-        self.assertEqual(result, 0)
+        with self.assertRaises(SystemExit):
+            self.controller._get_human_move()
+
+
+class TestTerminalUIInputValidation(unittest.TestCase):
+    """Test cases for TerminalUI input validation - the UI layer."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.ui = TerminalUI()
+        self.game = TicTacToe()
     
     @patch('builtins.input')
-    def test_human_player_get_move_handles_float_strings(self, mock_input):
-        """Test HumanPlayer.get_move raises ValueError for float strings."""
-        mock_input.return_value = '5.5'
-        
-        player = HumanPlayer('X')
-        board = [' '] * 9
-        
-        with self.assertRaises(ValueError):
-            player.get_move(board)
-    
-    @patch('builtins.input')
-    def test_human_player_get_move_board_parameter_not_used(self, mock_input):
-        """Test HumanPlayer.get_move works regardless of board state."""
+    def test_terminal_ui_get_valid_position_returns_valid_position(self, mock_input):
+        """Test TerminalUI.get_valid_position returns valid position."""
         mock_input.return_value = '3'
         
-        player = HumanPlayer('O')
+        result = self.ui.get_valid_position(self.game)
         
-        # Test with empty board
-        empty_board = [' '] * 9
-        result1 = player.get_move(empty_board)
-        self.assertEqual(result1, 3)
-        
-        # Test with partially filled board
-        filled_board = ['X', 'O', ' ', 'X', ' ', 'O', ' ', ' ', 'X']
-        result2 = player.get_move(filled_board)
-        self.assertEqual(result2, 3)
-    
-    def test_human_player_inherits_from_player(self):
-        """Test HumanPlayer correctly inherits from Player."""
-        player = HumanPlayer('X')
-        
-        self.assertIsInstance(player, Player)
-        self.assertEqual(player.symbol, 'X')
-    
-    def test_human_player_can_be_created_with_different_symbols(self):
-        """Test HumanPlayer can be created with different symbols."""
-        player_x = HumanPlayer('X')
-        player_o = HumanPlayer('O')
-        
-        self.assertEqual(player_x.symbol, 'X')
-        self.assertEqual(player_o.symbol, 'O')
+        self.assertEqual(result, 3)
     
     @patch('builtins.input')
-    def test_human_player_get_move_calls_input_once(self, mock_input):
-        """Test HumanPlayer.get_move calls input() exactly once."""
-        mock_input.return_value = '7'
+    @patch('builtins.print')
+    def test_terminal_ui_validates_position_range(self, mock_print, mock_input):
+        """Test TerminalUI validates position is in range 1-9."""
+        mock_input.side_effect = ['0', '10', '-1', '100', '5']
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
+        result = self.ui.get_valid_position(self.game)
         
-        player.get_move(board)
-        
-        mock_input.assert_called_once()
+        self.assertEqual(result, 5)
+        self.assertEqual(mock_input.call_count, 5)
     
     @patch('builtins.input')
-    def test_human_player_get_move_with_special_characters(self, mock_input):
-        """Test HumanPlayer.get_move raises ValueError for special characters."""
-        special_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')']
+    @patch('builtins.print')
+    def test_terminal_ui_validates_position_availability(self, mock_print, mock_input):
+        """Test TerminalUI validates position is not already taken."""
+        # Take position 5
+        self.game.make_move(5)
         
-        player = HumanPlayer('X')
-        board = [' '] * 9
+        # Try taken position, then free position
+        mock_input.side_effect = ['5', '1']
         
-        for char in special_chars:
-            with self.subTest(char=char):
-                mock_input.return_value = char
-                with self.assertRaises(ValueError):
-                    player.get_move(board)
+        result = self.ui.get_valid_position(self.game)
+        
+        self.assertEqual(result, 1)
+        self.assertEqual(mock_input.call_count, 2)
     
     @patch('builtins.input')
-    def test_human_player_get_move_with_mixed_input(self, mock_input):
-        """Test HumanPlayer.get_move raises ValueError for mixed alphanumeric input."""
-        mixed_inputs = ['1a', 'a1', '1 2', '1.', '.1', '1e2']
+    @patch('builtins.print')
+    def test_terminal_ui_handles_non_numeric_input(self, mock_print, mock_input):
+        """Test TerminalUI handles non-numeric input gracefully."""
+        mock_input.side_effect = ['abc', 'xyz', '3.14', '2e5', '4']
         
-        player = HumanPlayer('O')
-        board = [' '] * 9
+        result = self.ui.get_valid_position(self.game)
         
-        for mixed_input in mixed_inputs:
-            with self.subTest(input_value=mixed_input):
-                mock_input.return_value = mixed_input
-                with self.assertRaises(ValueError):
-                    player.get_move(board)
+        self.assertEqual(result, 4)
+        self.assertEqual(mock_input.call_count, 5)
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_terminal_ui_handles_whitespace_input(self, mock_print, mock_input):
+        """Test TerminalUI handles whitespace-only input gracefully."""
+        mock_input.side_effect = ['', '   ', '\t', '\n', '6']
+        
+        result = self.ui.get_valid_position(self.game)
+        
+        self.assertEqual(result, 6)
+        self.assertEqual(mock_input.call_count, 5)
+    
+    @patch('builtins.input')
+    def test_terminal_ui_handles_keyboard_interrupt(self, mock_input):
+        """Test TerminalUI handles KeyboardInterrupt gracefully."""
+        mock_input.side_effect = KeyboardInterrupt()
+        
+        with self.assertRaises(SystemExit):
+            self.ui.get_valid_position(self.game)
+    
+    @patch('builtins.input')
+    def test_terminal_ui_handles_eof_error(self, mock_input):
+        """Test TerminalUI handles EOFError gracefully."""
+        mock_input.side_effect = EOFError()
+        
+        with self.assertRaises(SystemExit):
+            self.ui.get_valid_position(self.game)
+
 
 # Add this new test class after the existing ones
 class TestAIPlayer(unittest.TestCase):

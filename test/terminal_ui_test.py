@@ -79,7 +79,7 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         output = mock_stdout.getvalue()
         self.assertIn("GAME OVER!", output)
         self.assertIn("Player X wins!", output)
-        self.assertIn("🎉", output)
+        self.assertIn("*** Player X wins! ***", output)
     
     @patch('sys.stdout', new_callable=StringIO)
     def test_display_game_result_draw(self, mock_stdout) -> None:
@@ -94,7 +94,7 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         output = mock_stdout.getvalue()
         self.assertIn("GAME OVER!", output)
         self.assertIn("It's a draw!", output)
-        self.assertIn("🤝", output)
+        self.assertIn("*** It's a draw! ***", output)
     
     @patch('sys.stdout', new_callable=StringIO)
     def test_show_message(self, mock_stdout) -> None:
@@ -104,7 +104,7 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         
         # Assert
         output = mock_stdout.getvalue()
-        self.assertIn("💬 Test message", output)
+        self.assertIn("Info: Test message", output)
     
     @patch('sys.stdout', new_callable=StringIO)
     def test_show_error(self, mock_stdout) -> None:
@@ -134,7 +134,7 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         
         # Assert
         output = mock_stdout.getvalue()
-        self.assertIn("🎮 Human Player X's turn", output)
+        self.assertIn("[TURN] Human Player X's turn", output)
     
     @patch('sys.stdout', new_callable=StringIO)
     def test_display_turn_info_ai(self, mock_stdout) -> None:
@@ -144,7 +144,7 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         
         # Assert
         output = mock_stdout.getvalue()
-        self.assertIn("🎮 AI Player O's turn", output)
+        self.assertIn("[TURN] AI Player O's turn", output)
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_display_session_stats_first_game(self, mock_stdout) -> None:
@@ -180,7 +180,7 @@ class TestTerminalUIDisplayMethods(unittest.TestCase):
         
         # Assert
         output = mock_stdout.getvalue()
-        self.assertIn("📊 Session: 3 games", output)
+        self.assertIn("[STATS] Session: 3 games", output)
         self.assertIn("2 X wins", output)
         self.assertIn("0 O wins", output)
         self.assertIn("1 draws", output)

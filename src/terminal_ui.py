@@ -196,10 +196,10 @@ class TerminalUI:
         
         if game_state['state'] == 'won':
             winner = game_state['winner']
-            print(f"🎉 Player {winner} wins! 🎉")
+            print(f"*** Player {winner} wins! ***")
             print(f"Congratulations to the {winner} player!")
         elif game_state['state'] == 'draw':
-            print("🤝 It's a draw! 🤝")
+            print("*** It's a draw! ***")
             print("Great game - you both played well!")
         else:
             print("Game ended unexpectedly.")
@@ -213,7 +213,7 @@ class TerminalUI:
         Args:
             message (str): Message to display
         """
-        print(f"💬 {message}")
+        print(f"Info: {message}")
     
     def show_error(self, error_message: str) -> None:
         """
@@ -242,12 +242,12 @@ class TerminalUI:
             is_ai (bool): Whether current player is AI
         """
         player_type = "AI" if is_ai else "Human"
-        print(f"\n🎮 {player_type} Player {current_player_symbol}'s turn")
+        print(f"\n[TURN] {player_type} Player {current_player_symbol}'s turn")
 
     def display_session_stats(self, stats: dict) -> None:
         """Display simple session statistics."""
         if stats['games_played'] <= 1:
             return  # Skip stats for first game
         
-        print(f"\n📊 Session: {stats['games_played']} games, "
+        print(f"\n[STATS] Session: {stats['games_played']} games, "
             f"{stats['x_wins']} X wins, {stats['o_wins']} O wins, {stats['draws']} draws")
