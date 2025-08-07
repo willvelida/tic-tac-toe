@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional, Callable
 import random
 import time
 from enum import Enum
@@ -20,66 +20,44 @@ class Player(ABC):
             raise ValueError(f"Invalid symbol '{symbol}'. Must be 'X' or 'O'.")
         self.symbol = symbol
 
-    @classmethod
-    def choose_symbol(cls):
-        """
-        Allow player to choose their symbol (X or O).
-
-        Returns:
-            str: Selected player symbol ('X' or 'O')
-        """
-        while True:
-            print("\nChoose your option:")
-            print("1. Player X")
-            print("2. Player O")
-            print("3. Random")
-            print("4. Quit Game")
-
-            try:
-                choice = input("Enter your choice (1-4): ").strip()
-                
-                if choice == '1':
-                    return TicTacToe.PLAYER_X
-                elif choice == '2':
-                    return TicTacToe.PLAYER_O
-                elif choice == '3':
-                    # Random selection between X and O
-                    return random.choice([TicTacToe.PLAYER_X, TicTacToe.PLAYER_O])
-                elif choice == '4':
-                    print("Thanks for playing! Goodbye!")
-                    raise SystemExit(0)
-                else:
-                    print(f"Invalid choice '{choice}'. Please enter 1, 2, 3, or 4.")
-            except (EOFError, KeyboardInterrupt):
-                print("\nGame cancelled. Goodbye!")
-                raise SystemExit(0)
-
     @abstractmethod
     def get_move(self, board: List[str]) -> int:
         pass
 
 class HumanPlayer(Player):
-    """Human player implementation"""
+    """
+    Human player implementation with pure strategy pattern.
+    
+    In the new architecture, human input is handled by the GameController
+    and TerminalUI classes to maintain clean separation of concerns.
+    """
 
     def get_move(self, board: List[str]) -> int:
         """
-        Get move from human via console input.
-
+        Human player move calculation.
+        
+        This method should not be called directly in the new UI architecture.
+        Human moves are handled by GameController through TerminalUI.
+        
         Args:
-            board: Current board state
-
+            board (List[str]): Current board state
+            
         Returns:
             int: Position 1-9 chosen by player
-
+            
         Raises:
-            ValueError: If input cannot be converted to integer
+            NotImplementedError: Human moves are handled by GameController/UI
         """
-        return int(input())
+        raise NotImplementedError(
+            "Human player moves are handled by GameController through UI. "
+            "Use GameController._get_human_move() instead."
+        )
     
 class AIPlayer(Player):
     """AI Player implementation with configurable difficulty levels"""
 
-    def __init__(self, symbol: str, difficulty: DifficultyLevel, enable_delay: bool = True):
+    def __init__(self, symbol: str, difficulty: DifficultyLevel, enable_delay: bool = True, 
+             status_callback: Optional[Callable[[str], None]] = None):
         """
         Initialize AI Player with symbol and difficulty level
 
@@ -87,6 +65,8 @@ class AIPlayer(Player):
             symbol (str): Player symbol ('X' or 'O')
             difficulty (DifficultyLevel): AI Difficulty level
             enable_delay (bool): Whether to enable move delay simulation (default: True)
+            status_callback (Optional[Callable[[str], None]]): Optional callback function 
+                for AI status messages (e.g., "AI is thinking...")
 
         Raises:
             ValueError: If symbol is invalid
@@ -99,6 +79,7 @@ class AIPlayer(Player):
         
         self.difficulty = difficulty
         self.enable_delay = enable_delay
+        self.status_callback = status_callback
         # Create a single TicTacToe instance for board analysis (optimization)
         self._game_analyzer = TicTacToe()
 
@@ -152,7 +133,6 @@ class AIPlayer(Player):
         # Early termination optimization: Check for obvious moves first
         
         # Create a temporary game analyzer with the current board state
-        from src.tic_tac_toe import TicTacToe
         temp_game = TicTacToe()
         temp_game.board = board.copy()
         
@@ -341,10 +321,12 @@ class AIPlayer(Player):
         Simulate AI thinking time with random delay and message display.
 
         Provides a more natural user experience by showing the AI is "thinking"
-        before making a move
+        before making a move. Uses status callback if provided, otherwise silent.
         """
         delay = random.uniform(0.5, 2.0)
 
-        print("AI opponent is thinking...")
+        # Use callback for status message if available
+        if self.status_callback:
+            self.status_callback("AI opponent is thinking...")
 
         time.sleep(delay)
