@@ -1381,17 +1381,19 @@ class TestTicTacToe(unittest.TestCase):
 
     def test_find_winning_move_with_invalid_player_symbol(self) -> None:
         """Test find_winning_move behavior with invalid player symbols."""
-        # Test with invalid symbols - should not find wins
+        # Test with invalid symbols - should raise ValueError
         self.game.board = ['X', 'X', ' ',  # positions 1,2,3
                            ' ', ' ', ' ',  # positions 4,5,6
                            ' ', ' ', ' ']  # positions 7,8,9
         
-        # Invalid symbols should return None
-        result_invalid = self.game.find_winning_move('Z')
-        self.assertIsNone(result_invalid)
+        # Invalid symbols should raise ValueError
+        with self.assertRaises(ValueError) as context:
+            self.game.find_winning_move('Z')
+        self.assertIn("Invalid player symbol 'Z'", str(context.exception))
         
-        result_empty = self.game.find_winning_move('')
-        self.assertIsNone(result_empty)
+        with self.assertRaises(ValueError) as context:
+            self.game.find_winning_move('')
+        self.assertIn("Invalid player symbol ''", str(context.exception))
 
 if __name__ == '__main__':
     unittest.main()

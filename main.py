@@ -6,8 +6,8 @@ A complete tic-tac-toe game with human vs human and human vs AI modes.
 Features clean architecture with separated UI, game logic, and player strategies.
 
 Usage:
-    python main.py
-    python -m src.main
+    python main.py                 (run from project root)
+    python main.py --demo          (run demo mode)
 
 Author: willvelida
 """
@@ -25,10 +25,10 @@ def display_welcome_message(ui: TerminalUI) -> None:
     """
     ui.show_message("Welcome to Tic-Tac-Toe!")
     print("\n" + "="*50)
-    print("🎮 WELCOME TO TIC-TAC-TOE 🎮")
+    print("*** WELCOME TO TIC-TAC-TOE ***")
     print("="*50)
     print()
-    print("📋 HOW TO PLAY:")
+    print("HOW TO PLAY:")
     print("   • Choose your game mode")
     print("   • Enter positions 1-9 to make moves")
     print("   • Position layout:")
@@ -142,7 +142,7 @@ def run_demo_game() -> None:
     
     This function can be used for automated testing or demonstration.
     """
-    print("🎮 Running Tic-Tac-Toe Demo...")
+    print("[DEMO] Running Tic-Tac-Toe Demo...")
     print("Note: This is a demo mode - use main() for interactive play")
     
     try:
