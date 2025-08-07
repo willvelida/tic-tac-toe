@@ -466,7 +466,7 @@ class TestTerminalUIEdgeCases(unittest.TestCase):
     def test_eof_error_handling(self, mock_input) -> None:
         """Test handling EOFError (Ctrl+D on Unix)."""
         # Arrange
-        self.mock_game.current_player = 'X'  # <-- ADD THIS LINE
+        self.mock_game.current_player = 'X'
         mock_input.side_effect = EOFError()
         
         # Act & Assert
